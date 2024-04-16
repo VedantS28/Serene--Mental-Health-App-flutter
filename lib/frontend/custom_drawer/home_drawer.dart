@@ -64,11 +64,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
         labelName: 'About Us',
         icon: const Icon(Icons.info),
       ),
-      DrawerList(
-        index: DrawerIndex.Coffee,
-        labelName: 'Buy us a coffee',
-        icon: const Icon(Icons.coffee),
-      ),
+     
     ];
   }
 
