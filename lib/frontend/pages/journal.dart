@@ -26,12 +26,15 @@ class _JournalPageState extends State<JournalPage> {
     super.initState();
     authService = getIt.get<AuthService>();
     databaseService = getIt.get<DatabaseService>();
-    // databaseService
-    //     .getAllJournalEntriesForUID(authService.user!.uid)
-    //     .then((value) => entries = value);
     databaseService
         .createJournalEntry(authService.user!.uid)
         .then((value) => print("journal: $value"));
+    databaseService.getJournalData(authService.user!.uid).listen((event) {
+      setState(() {
+        entries = (event.data()!.journalEntry)!;
+      });
+      print(event.data()!.journalEntry ?? "nothing");
+    });
   }
 
   @override

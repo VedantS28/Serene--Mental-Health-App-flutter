@@ -8,7 +8,12 @@ class JournalList {
 
   JournalList.fromJson(Map<String, dynamic> json) {
     uid = json['uid'];
-    journalEntry = json['journalEntry'];
+    if (json['journalEntry'] != null) {
+      journalEntry = List<JournalEntry>.from(
+          json['journalEntry'].map((entry) => JournalEntry.fromJson(entry)));
+    } else {
+      journalEntry = null;
+    }
   }
 
   Map<String, dynamic> toJson() {

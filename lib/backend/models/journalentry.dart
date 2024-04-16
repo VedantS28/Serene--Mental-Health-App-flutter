@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class JournalEntry {
   String? title;
   DateTime? date;
@@ -12,7 +14,7 @@ class JournalEntry {
   JournalEntry.fromJson(Map<String, dynamic> json) {
     title = json['title'];
     content = (json['content']);
-    date = json['date'];
+    date = (json['date'] as Timestamp).toDate();
   }
 
   Map<String, dynamic> toJson() {
