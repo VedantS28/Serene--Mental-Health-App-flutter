@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
 
 import '../models/chat.dart';
-import '../models/journalentry.dart';
+import '../models/journallist.dart';
 import '../models/message.dart';
 import '../models/user_profile.dart';
 import '../utils.dart';
@@ -36,9 +36,9 @@ class DatabaseService {
               toFirestore: (chat, _) => chat.toJson(),
             );
     _journalCollection =
-        _firebaseFirestore.collection('journal').withConverter<JournalEntry>(
+        _firebaseFirestore.collection('journal').withConverter<JournalList>(
               fromFirestore: (snapshot, _) =>
-                  JournalEntry.fromJson(snapshot.data()!),
+                  JournalList.fromJson(snapshot.data()!),
               toFirestore: (journal, _) => journal.toJson(),
             );
   }
@@ -109,26 +109,19 @@ class DatabaseService {
         as Stream<DocumentSnapshot<Chat>>;
   }
 
-  Future<void> saveJournalEntry(String uid, JournalEntry journalEntry) async {
+  Future<void> saveJournalEntry(String uid, JournalList journalEntry) async {
     try {
       // Create a reference to the user's journal entry document
       DocumentReference journalDocRef = _journalCollection!.doc(uid);
 
       // Get the existing journal entries or create a new list if it doesn't exist
-      List<JournalEntry> existingEntries = [];
       final docSnapshot = await journalDocRef.get();
       if (docSnapshot.exists) {
-        existingEntries = (docSnapshot.data() as List<dynamic>)
-            .map((entryJson) => JournalEntry.fromJson(entryJson))
-            .toList();
+        
       }
 
-      // Add the new journal entry to the list
-      existingEntries.add(journalEntry);
 
-      // Update the document with the updated list of journal entries
-      await journalDocRef
-          .set(existingEntries.map((entry) => entry.toJson()).toList());
+
     } catch (error) {
       // Handle any errors that occur during the process
       print("Error saving journal entry: $error");
@@ -137,13 +130,12 @@ class DatabaseService {
   }
 
   Future<void> saveJournalEntrynew(
-      String uid, JournalEntry journalEntry) async {
+      String uid, JournalList journalList) async {
     try {
       // Create a reference to the user's journal entries collection
       final docRef = _journalCollection!.doc(uid);
 
-      // Add the new journal entry to the collection
-      await docRef.set(journalEntry);
+      await docRef.set(journalList);
       print("saved journal");
     } catch (error) {
       // Handle any  errors that occur during the process
@@ -152,26 +144,26 @@ class DatabaseService {
     }
   }
 
-  Future<List<JournalEntry>> getAllJournalEntriesForUID(String uid) async {
-    try {
-      // Create a reference to the user's journal entries collection
-      CollectionReference journalEntriesCollection =
-          _journalCollection!.doc(uid).collection('entries');
+  // Future<List<JournalEntry>> getAllJournalEntriesForUID(String uid) async {
+  //   try {
+  //     // Create a reference to the user's journal entries collection
+  //     CollectionReference journalEntriesCollection =
+  //         _journalCollection!.doc(uid).collection('entries');
 
-      // Retrieve all documents from the collection
-      QuerySnapshot querySnapshot = await journalEntriesCollection.get();
+  //     // Retrieve all documents from the collection
+  //     QuerySnapshot querySnapshot = await journalEntriesCollection.get();
 
-      // Convert the documents to JournalEntry objects
-      List<JournalEntry> entries = querySnapshot.docs.map((doc) {
-        return JournalEntry.fromJson(doc.data() as Map<String, dynamic>);
-      }).toList();
-      print(entries);
-      print("retrieved");
-      return entries;
-    } catch (error) {
-      // Handle any errors that occur during the process
-      print("Error retrieving journal entries: $error");
-      rethrow;
-    }
-  }
+  //     // Convert the documents to JournalEntry objects
+  //     List<JournalEntry> entries = querySnapshot.docs.map((doc) {
+  //       return JournalEntry.fromJson(doc.data() as Map<String, dynamic>);
+  //     }).toList();
+  //     print(entries);
+  //     print("retrieved");
+  //     return entries;
+  //   } catch (error) {
+  //     // Handle any errors that occur during the process
+  //     print("Error retrieving journal entries: $error");
+  //     rethrow;
+  //   }
+  // }
 }

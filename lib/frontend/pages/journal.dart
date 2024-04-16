@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:mental_health/backend/models/journallist.dart';
 import 'package:mental_health/backend/services/auth_service.dart';
 import 'package:mental_health/backend/services/database_service.dart';
 
@@ -25,9 +26,9 @@ class _JournalPageState extends State<JournalPage> {
     super.initState();
     authService = getIt.get<AuthService>();
     databaseService = getIt.get<DatabaseService>();
-    databaseService
-        .getAllJournalEntriesForUID(authService.user!.uid)
-        .then((value) => entries = value);
+    // databaseService
+    //     .getAllJournalEntriesForUID(authService.user!.uid)
+    //     .then((value) => entries = value);
   }
 
   @override
@@ -198,12 +199,12 @@ class _NewJournalEntryPageState extends State<NewJournalEntryPage> {
                 if (_titleController.text.isNotEmpty &&
                     _contentController.text.isNotEmpty) {
                   _databaseService.saveJournalEntrynew(
-                      _authService.user!.uid,
-                      JournalEntry(
-                        title: _titleController.text,
-                        date: DateTime.now(),
-                        content: _contentController.text,
-                      ));
+                    _authService.user!.uid,
+                    JournalList(
+                      uid: _authService.user!.uid,
+                      journalEntry: entries,
+                    ),
+                  );
                   Navigator.pop(
                     context,
                     JournalEntry(
@@ -383,10 +384,14 @@ class _UpdateJournalEntryPageState extends State<UpdateJournalEntryPage> {
               onPressed: () async {
                 _databaseService.saveJournalEntrynew(
                     _authService.user!.uid,
-                    JournalEntry(
-                        title: widget._titleController.text,
-                        date: DateTime.now(),
-                        content: widget._contentController.text));
+                    // JournalEntry(
+                    //     title: widget._titleController.text,
+                    //     date: DateTime.now(),
+                    //     content: widget._contentController.text),
+                    JournalList(
+                      uid: _authService.user!.uid,
+                      journalEntry: entries,
+                    ));
                 _updateEntry(context);
               },
               child: const Text('Update'),
