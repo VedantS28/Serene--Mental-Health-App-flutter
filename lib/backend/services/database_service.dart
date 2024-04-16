@@ -88,6 +88,19 @@ class DatabaseService {
     await docRef.set(chat);
   }
 
+  Future<bool> createJournalEntry(String uid) async {
+    final journallist =
+        JournalList(uid: _authService.user!.uid, journalEntry: []);
+    final result = await _journalCollection!.doc(uid).get();
+    if (result.exists) {
+      print("journal already initialised");
+      return false;
+    }
+    print("journal now initialised");
+    await _journalCollection!.doc(uid).set(journallist);
+    return true;
+  }
+
   Future<void> sendChatMessage(
       String uid1, String uid2, Message message) async {
     String chatId = generateChatId(uid1: uid1, uid2: uid2);
@@ -109,19 +122,27 @@ class DatabaseService {
         as Stream<DocumentSnapshot<Chat>>;
   }
 
-  Future<void> saveJournalEntry(String uid, JournalList journalEntry) async {
+  Future<void> saveJournalEntry(String uid, JournalList journalList) async {
     try {
       // Create a reference to the user's journal entry document
       DocumentReference journalDocRef = _journalCollection!.doc(uid);
 
       // Get the existing journal entries or create a new list if it doesn't exist
       final docSnapshot = await journalDocRef.get();
+      JournalList? existingEntries;
       if (docSnapshot.exists) {
-        
+        existingEntries =
+            JournalList.fromJson(docSnapshot.data()! as Map<String, dynamic>);
+      } else {
+        existingEntries = JournalList(uid: uid, journalEntry: []);
       }
 
+      // Combine new entries with existing ones (assuming append behavior)
+      existingEntries.journalEntry!.addAll(journalList.journalEntry!);
 
-
+      // Update the journal document with the combined entries
+      await journalDocRef.set(existingEntries);
+      print("Journal entry updated successfully");
     } catch (error) {
       // Handle any errors that occur during the process
       print("Error saving journal entry: $error");
@@ -129,13 +150,15 @@ class DatabaseService {
     }
   }
 
-  Future<void> saveJournalEntrynew(
-      String uid, JournalList journalList) async {
+  Future<void> saveJournalEntrynew(String uid, JournalList journalList) async {
     try {
-      // Create a reference to the user's journal entries collection
       final docRef = _journalCollection!.doc(uid);
-
-      await docRef.set(journalList);
+      int length = journalList.journalEntry!.length;
+      await docRef.update({
+        'entries': FieldValue.arrayUnion(
+          [journalList.journalEntry!.elementAt(length - 1).toJson()],
+        ),
+      });
       print("saved journal");
     } catch (error) {
       // Handle any  errors that occur during the process

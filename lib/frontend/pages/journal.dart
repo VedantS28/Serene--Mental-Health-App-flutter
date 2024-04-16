@@ -29,6 +29,9 @@ class _JournalPageState extends State<JournalPage> {
     // databaseService
     //     .getAllJournalEntriesForUID(authService.user!.uid)
     //     .then((value) => entries = value);
+    databaseService
+        .createJournalEntry(authService.user!.uid)
+        .then((value) => print("journal: $value"));
   }
 
   @override
@@ -61,7 +64,8 @@ class _JournalPageState extends State<JournalPage> {
             return ListTile(
               title: Text(entries[index].title!),
               subtitle: Text(entries[index].date.toString()),
-              onTap: () {
+              onTap: () async {
+                // await databaseService.createJournalEntry(authService.user!.uid);
                 // Navigate to a page to view the full journal entry
                 Navigator.push(
                   context,
@@ -100,7 +104,10 @@ class _JournalPageState extends State<JournalPage> {
             ).then((newEntry) {
               if (newEntry != null) {
                 setState(() {
-                  entries.add(newEntry);
+                  if (entries[entries.length - 1].content != newEntry.content &&
+                      entries[entries.length - 1].title != newEntry.title) {
+                    entries.add(newEntry);
+                  }
                 });
               }
             });
@@ -195,23 +202,32 @@ class _NewJournalEntryPageState extends State<NewJournalEntryPage> {
               style: const ButtonStyle(
                 backgroundColor: MaterialStatePropertyAll(Colors.black),
               ),
-              onPressed: () {
+              onPressed: () async {
                 if (_titleController.text.isNotEmpty &&
                     _contentController.text.isNotEmpty) {
-                  _databaseService.saveJournalEntrynew(
+                  setState(() {
+                    entries.add(
+                      JournalEntry(
+                        title: _titleController.text,
+                        date: DateTime.now(),
+                        content: _contentController.text,
+                      ),
+                    );
+                  });
+                  JournalList journalList = JournalList(
+                      uid: _authService.user!.uid, journalEntry: entries);
+                  await _databaseService.saveJournalEntrynew(
                     _authService.user!.uid,
-                    JournalList(
-                      uid: _authService.user!.uid,
-                      journalEntry: entries,
-                    ),
+                    journalList,
                   );
                   Navigator.pop(
                     context,
-                    JournalEntry(
-                      title: _titleController.text,
-                      date: DateTime.now(),
-                      content: _contentController.text,
-                    ),
+                    // JournalEntry(
+                    //   title: _titleController.text,
+                    //   date: DateTime.now(),
+                    //   content: _contentController.text,
+                    // ),
+                    entries[entries.length - 1],
                   );
                 } else {
                   // Show a snackbar indicating that title and content are required
@@ -382,16 +398,16 @@ class _UpdateJournalEntryPageState extends State<UpdateJournalEntryPage> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () async {
-                _databaseService.saveJournalEntrynew(
-                    _authService.user!.uid,
-                    // JournalEntry(
-                    //     title: widget._titleController.text,
-                    //     date: DateTime.now(),
-                    //     content: widget._contentController.text),
-                    JournalList(
-                      uid: _authService.user!.uid,
-                      journalEntry: entries,
-                    ));
+                JournalList journalList = JournalList(
+                    uid: _authService.user!.uid, journalEntry: entries);
+                await _databaseService.saveJournalEntrynew(
+                  _authService.user!.uid,
+                  // JournalEntry(
+                  //     title: widget._titleController.text,
+                  //     date: DateTime.now(),
+                  //     content: widget._contentController.text),
+                  journalList,
+                );
                 _updateEntry(context);
               },
               child: const Text('Update'),
@@ -410,6 +426,9 @@ class _UpdateJournalEntryPageState extends State<UpdateJournalEntryPage> {
         date: DateTime.now(),
         content: widget._contentController.text,
       );
+      setState(() {
+        entries.add(updatedEntry);
+      });
       Navigator.pop(context, updatedEntry);
     } else {
       // Show a snackbar indicating that title and content are required
