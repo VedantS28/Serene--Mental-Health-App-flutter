@@ -22,10 +22,6 @@ class HomeList {
       navigateScreen: JournalPage(),
     ),
     HomeList(
-      imagePath: 'assets/images/3.png',
-      navigateScreen: HomePage(),
-    ),
-    HomeList(
       imagePath: 'assets/introduction_animation/relax_image.png',
       navigateScreen: HomePage(),
     ),
