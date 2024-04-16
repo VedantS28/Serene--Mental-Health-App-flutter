@@ -1,4 +1,4 @@
-# mental_health
+# Serene A Mental Health Chat app
 
 A new Flutter project.
 
